@@ -1,26 +1,29 @@
 # EventAI - AI-Powered Smart Event Planner
 
-A full-stack, state-of-the-art event planning platform integrating AI capabilities for venue recommendation, crowd turnout estimation, budget breakdowns, chronological schedule generation, and a chat assistant. Built with **React.js** for the frontend and **Django REST Framework (DRF)** for the backend.
+A full-stack, state-of-the-art event planning platform integrating AI capabilities for venue recommendation, crowd turnout estimation, budget breakdowns, chronological schedule generation, and a chat assistant. Built with **React.js** for the frontend and **FastAPI** (with SQLite, SQLAlchemy, and JWT) for the backend.
 
 ---
 
 ## Project Structure
 ```
 /workspace
-├── backend/                  # Django REST Framework Backend
-│   ├── eventai_backend/      # Project settings, base URLs
-│   ├── events/               # App code: models, views, serializers, urls, AI utils
-│   ├── media/                # Storage folder for uploaded event banners and ticket QRs
-│   ├── db.sqlite3            # Pre-seeded development database
-│   ├── seed.py               # Database populator script
-│   └── requirements.txt      # Python dependencies list
+├── backend/                  # FastAPI Backend
+│   ├── main.py               # Main application entry point & API routes
+│   ├── auth.py               # JWT authentication helper functions & middleware
+│   ├── models.py             # SQLAlchemy database models (Users, Events, Bookings, etc.)
+│   ├── schemas.py            # Pydantic validation models for request/response bodies
+│   ├── database.py           # SQLAlchemy database configuration and session setup
+│   ├── ai_utils.py           # AI planner tools & Gemini API coordination scripts
+│   ├── db.sqlite3            # Seeded SQLite development database file
+│   ├── seed.py               # Database seeder script
+│   └── requirements.txt      # Backend Python dependencies list
 └── frontend/                 # Vite + React Frontend
     ├── src/
-    │   ├── components/       # UI elements: Sidebar, Header, AI Forms
-    │   ├── context/          # State providers: AuthContext, ThemeContext
-    │   ├── pages/            # View Pages: Login, Register, Dashboard, Event details
-    │   ├── App.jsx           # Main Router & layouts
-    │   └── index.css         # Premium dark/light design system styles
+    │   ├── components/       # UI components (Sidebar, Header, AI Forms, etc.)
+    │   ├── context/          # State managers (AuthContext, ThemeContext)
+    │   ├── pages/            # Page layouts (Dashboard, LandingPage, Profile, EventDetails, etc.)
+    │   ├── App.jsx           # Main router config & guarded layouts
+    │   └── index.css         # Premium design system styles
     └── package.json          # Node dependencies list
 ```
 
@@ -28,50 +31,54 @@ A full-stack, state-of-the-art event planning platform integrating AI capabiliti
 
 ## 1. Quick Start Setup
 
-### Step A: Start the Django Backend
+### Step A: Start the FastAPI Backend
 
 1. Navigate to the backend folder and activate the virtual environment:
    ```bash
    cd backend
    source venv/bin/activate
    ```
-2. Set your Gemini API key (optional - the system has automatic local smart mock fallbacks if not configured):
+2. Install Python dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Set your Gemini API key (optional - the system has automatic local smart mock fallbacks if not configured):
    ```bash
    export GEMINI_API_KEY="your-actual-api-key-here"
    ```
-3. Run the development server:
+4. Run the development server using Uvicorn:
    ```bash
-   python manage.py runserver
+   uvicorn main:app --reload
    ```
-   The backend will be running at `http://127.0.0.1:8000/`.
+   The backend API will be running at `http://127.0.0.1:8000/` with interactive OpenAPI documentation available at `http://127.0.0.1:8000/docs`.
 
 ---
 
 ### Step B: Start the React Frontend
 
-1. Open a new terminal window, navigate to the frontend folder, and install dependencies:
+1. Navigate to the frontend folder and install dependencies:
    ```bash
    cd frontend
    npm install
    ```
-2. Start the development server:
+2. Start the Vite development server:
    ```bash
    npm run dev
    ```
-   Open `http://localhost:5173/` in your browser.
+   Open `http://localhost:5173/` (or the console's allocated dev server URL) in your browser.
 
 ---
 
 ## 2. Default Test Credentials
 The database has been pre-seeded with sample events and users. You can log in immediately using the following accounts:
 
-* **Organizer Account (Create, Edit & View Statistics)**
-  - **Username:** `organizer`
-  - **Password:** `organizer123`
-* **Regular User Account (Browse Events & Book Ticket passes)**
+* **Regular User Account (Browse Events, Book Passes, complete profile pass)**
   - **Username:** `user`
   - **Password:** `user123`
-* **Administrator Account (View full platform logs & metrics)**
+* **Organizer Account (Staging Events & View Booking Statistics)**
+  - **Username:** `organizer`
+  - **Password:** `organizer123`
+* **Administrator Account (View full platform metrics)**
   - **Username:** `admin`
   - **Password:** `admin123`
 
@@ -80,55 +87,41 @@ The database has been pre-seeded with sample events and users. You can log in im
 ## 3. Advanced Configuration
 
 ### Switching from SQLite to MySQL
-To transition the database to MySQL, modify the `DATABASES` setting in `backend/eventai_backend/settings.py`:
+To transition the database to MySQL, modify the connection URL string inside `backend/database.py`:
 
 ```python
-# Install mysqlclient: pip install mysqlclient
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'eventai_db',
-        'USER': 'your_mysql_user',
-        'PASSWORD': 'your_mysql_password',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
-}
+# Install pymysql and cryptography: pip install pymysql cryptography
+# Replace sqlite connection string:
+SQLALCHEMY_DATABASE_URL = "mysql+pymysql://your_mysql_user:your_mysql_password@localhost:3306/eventai_db"
 ```
-*After changing settings, run migrations and seeding again:*
+*After changing the connection string, tables will auto-generate on start, and you can re-seed the new database:*
 ```bash
-python manage.py makemigrations
-python manage.py migrate
 python seed.py
 ```
 
 ### AI Suite Utilities
-All AI planner tools and the chatbot execute through `backend/events/ai_utils.py`. The endpoints structure:
-* **Venue Recommendation:** Matches budget constraint + headcounts with optimal spaces.
-* **Crowd Turnover Predictor:** Determines turnout rates based on day of week and price.
-* **Itemized Budget Planner:** Divides event category capital into venue, catering, AV, and permits.
-* **Auto Itinerary Creator:** Compiles cron schedules.
-* **Gemini Assistant:** Provides direct planner chat response.
+All AI planner calculations execute through `backend/ai_utils.py` and are mapped to endpoints in `backend/main.py`:
+* **Venue Recommendation:** Evaluates headcounts and budget ranges against spaces.
+* **Crowd Turnover Predictor:** Yields expected turnout margins by analyzing staging dates/times.
+* **Itemized Budget Planner:** Dynamically splits event category capitals (venue, catering, AV).
+* **Auto Itinerary Creator:** Compiles chronological event sequences.
+* **Gemini Assistant:** Drives direct interactive coordination conversations.
 
 ---
 
 ## 4. Deployment Guide
 
 ### Backend Deployment (e.g. Render, Heroku, or AWS EC2)
-1. Prepare setting configurations: Set `DEBUG = False` and define `ALLOWED_HOSTS`.
-2. Configure static collections for media uploads:
+1. Ensure your production environment sets environment variables like `GEMINI_API_KEY`.
+2. Deploy using a production-ready ASGI server like Uvicorn or Gunicorn with uvicorn workers:
    ```bash
-   python manage.py collectstatic
-   ```
-3. Use a WSGI runner like **Gunicorn**:
-   ```bash
-   gunicorn eventai_backend.wsgi:application
+   gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
    ```
 
 ### Frontend Deployment (e.g. Vercel, Netlify, or AWS S3)
-1. Build the static production build files:
+1. Compile the production bundles:
    ```bash
    npm run build
    ```
-2. Upload the generated `frontend/dist/` folder contents to your static host.
-3. Redirect all rewrite routing rules to `index.html` to allow React Router to handle page paths.
+2. Deploy the static contents of the generated `frontend/dist/` directory.
+3. Configure your host server to rewrite all routes back to `index.html` to allow React Router to handle dynamic client-side paths.
