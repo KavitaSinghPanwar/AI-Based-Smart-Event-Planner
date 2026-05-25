@@ -60,9 +60,42 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error("Login failed", error);
+      const errors = error.response?.data;
+      let errorMsg = "Invalid credentials. Please try again.";
+      if (errors) {
+        if (errors.detail) {
+          const detail = errors.detail;
+          if (typeof detail === 'string') {
+            errorMsg = detail;
+          } else if (Array.isArray(detail)) {
+            errorMsg = detail
+              .map((err) => {
+                const field = err.loc && err.loc.length > 1 ? err.loc.slice(1).join('.') : '';
+                return `${field ? field + ': ' : ''}${err.msg}`;
+              })
+              .join('\n');
+          } else if (typeof detail === 'object') {
+            errorMsg = Object.entries(detail)
+              .map(([key, val]) => {
+                const valStr = Array.isArray(val) ? val.join(' ') : (typeof val === 'object' ? JSON.stringify(val) : val);
+                return `${key}: ${valStr}`;
+              })
+              .join('\n');
+          }
+        } else if (typeof errors === 'object') {
+          errorMsg = Object.entries(errors)
+            .map(([key, val]) => {
+              const valStr = Array.isArray(val) ? val.join(' ') : (typeof val === 'object' ? JSON.stringify(val) : val);
+              return `${key}: ${valStr}`;
+            })
+            .join('\n');
+        } else if (typeof errors === 'string') {
+          errorMsg = errors;
+        }
+      }
       return {
         success: false,
-        error: error.response?.data?.detail || "Invalid credentials. Please try again."
+        error: errorMsg
       };
     }
   };
@@ -74,15 +107,36 @@ export const AuthProvider = ({ children }) => {
       return await login(username, password);
     } catch (error) {
       console.error("Registration failed", error);
-      // Return detailed error string
       const errors = error.response?.data;
       let errorMsg = "Registration failed. Please check inputs.";
       if (errors) {
-        if (typeof errors === 'object') {
+        if (errors.detail) {
+          const detail = errors.detail;
+          if (typeof detail === 'string') {
+            errorMsg = detail;
+          } else if (Array.isArray(detail)) {
+            errorMsg = detail
+              .map((err) => {
+                const field = err.loc && err.loc.length > 1 ? err.loc.slice(1).join('.') : '';
+                return `${field ? field + ': ' : ''}${err.msg}`;
+              })
+              .join('\n');
+          } else if (typeof detail === 'object') {
+            errorMsg = Object.entries(detail)
+              .map(([key, val]) => {
+                const valStr = Array.isArray(val) ? val.join(' ') : (typeof val === 'object' ? JSON.stringify(val) : val);
+                return `${key}: ${valStr}`;
+              })
+              .join('\n');
+          }
+        } else if (typeof errors === 'object') {
           errorMsg = Object.entries(errors)
-            .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(' ') : val}`)
+            .map(([key, val]) => {
+              const valStr = Array.isArray(val) ? val.join(' ') : (typeof val === 'object' ? JSON.stringify(val) : val);
+              return `${key}: ${valStr}`;
+            })
             .join('\n');
-        } else {
+        } else if (typeof errors === 'string') {
           errorMsg = errors;
         }
       }
