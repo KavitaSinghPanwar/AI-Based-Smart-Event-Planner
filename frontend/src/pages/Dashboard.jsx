@@ -8,7 +8,8 @@ import {
   TrendingUp, 
   Users, 
   ShieldCheck, 
-  Layers 
+  Layers,
+  Sparkles
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -21,7 +22,22 @@ import {
   Cell 
 } from 'recharts';
 
-const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+const COLORS = ['#0ea5e9', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    const isRevenue = payload[0].dataKey === 'revenue';
+    return (
+      <div className="glass-panel" style={{ padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+        <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>{label}</p>
+        <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--accent-primary)' }}>
+          {isRevenue ? `$${parseFloat(payload[0].value).toFixed(2)}` : `${payload[0].value} Event(s)`}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -96,7 +112,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="main-layout">
+    <div className="main-layout animate-fade-in-up">
       <Header title={`${user.role.toUpperCase()} Portal - Dashboard`} />
       
       <div className="content-body">
@@ -113,12 +129,12 @@ const Dashboard = () => {
         {/* Stats Grid */}
         <div className="dashboard-grid">
           {cards.map((card, idx) => (
-            <div key={idx} className="stat-card">
+            <div key={idx} className="stat-card glass-panel" style={{ padding: '20px 24px' }}>
               <div className="stat-header">
-                <span className="stat-label">{card.label}</span>
-                <div className="stat-icon-wrapper">{card.icon}</div>
+                <span className="stat-label" style={{ fontWeight: 500 }}>{card.label}</span>
+                <div className="stat-icon-wrapper" style={{ background: 'rgba(var(--accent-rgb), 0.12)' }}>{card.icon}</div>
               </div>
-              <div className="stat-value">{card.value}</div>
+              <div className="stat-value" style={{ marginTop: '8px' }}>{card.value}</div>
             </div>
           ))}
         </div>
@@ -126,24 +142,18 @@ const Dashboard = () => {
         {/* Charts and Tables */}
         {user.role !== 'user' && chartData.length > 0 && (
           <div className="charts-grid">
-            <div className="chart-card">
+            <div className="chart-card glass-panel">
               <h3 className="chart-title">
                 {user.role === 'organizer' ? 'Revenue Breakdown by Category ($)' : 'Active Events by Category'}
               </h3>
               <div style={{ width: '100%', height: '300px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
-                    <XAxis dataKey="name" stroke="var(--text-secondary)" />
-                    <YAxis stroke="var(--text-secondary)" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'var(--bg-secondary)', 
-                        borderColor: 'var(--border-color)',
-                        color: 'var(--text-primary)' 
-                      }} 
-                    />
-                    <Bar dataKey={user.role === 'organizer' ? "revenue" : "count"} radius={[8, 8, 0, 0]}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                    <XAxis dataKey="name" stroke="var(--text-secondary)" tickLine={false} style={{ fontSize: '12px' }} />
+                    <YAxis stroke="var(--text-secondary)" tickLine={false} axisLine={false} style={{ fontSize: '12px' }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255, 255, 255, 0.04)' }} />
+                    <Bar dataKey={user.role === 'organizer' ? "revenue" : "count"} radius={[6, 6, 0, 0]} maxBarSize={45}>
                       {chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
@@ -153,24 +163,23 @@ const Dashboard = () => {
               </div>
             </div>
             
-            <div className="chart-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '20px' }}>
-              <div style={{ textAlign: 'center', padding: '20px' }}>
-                <TrendingUp size={48} color="var(--accent-primary)" style={{ marginBottom: '16px' }} />
-                <h4 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>Smart Growth Tip</h4>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                  AI recommendations indicate that scheduling seminars on Thursdays increases participant engagement by 18% compared to weekend sessions. Try running a pilot session!
-                </p>
-              </div>
+            <div className="advisor-card glass-panel animate-scale-in">
+              <Sparkles size={24} className="advisor-sparkle" color="var(--accent-primary)" />
+              <TrendingUp size={44} color="var(--accent-primary)" style={{ marginBottom: '16px' }} />
+              <h4 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px', color: 'var(--text-primary)' }}>AI Smart Advisor</h4>
+              <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: '1.6', margin: '0 auto', maxWidth: '320px' }}>
+                EventAI predictive turnout trends reveal scheduling <strong>Seminars</strong> on <strong>Thursdays</strong> increases participant retention and sign-ups by <strong>18%</strong> compared to weekend slots.
+              </p>
             </div>
           </div>
         )}
 
         {/* Recent Activity Table */}
         {stats && stats.recent_bookings && (
-          <div className="table-card">
+          <div className="table-card glass-panel">
             <div className="table-header-container">
               <h3 style={{ fontSize: '18px', fontWeight: 700 }}>Recent Booking Activity</h3>
-              <span style={{ fontSize: '13px', color: 'var(--accent-primary)', fontWeight: 600 }}>Live Feed</span>
+              <span className="badge badge-success" style={{ letterSpacing: '0.5px' }}>Live Feed</span>
             </div>
             
             <div className="table-responsive">
@@ -215,3 +224,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

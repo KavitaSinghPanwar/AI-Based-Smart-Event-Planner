@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -41,13 +41,19 @@ const PublicRoute = () => {
 
 // Main Layout Wrapper
 const DashboardLayout = () => {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
   return (
     <div className="app-container">
-      <Sidebar />
-      <Outlet />
+      <Sidebar mobileOpen={mobileSidebarOpen} setMobileOpen={setMobileSidebarOpen} />
+      {mobileSidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setMobileSidebarOpen(false)}></div>
+      )}
+      <Outlet context={{ mobileSidebarOpen, setMobileSidebarOpen }} />
     </div>
   );
 };
+
 
 // Organizer specific route guard
 const OrganizerRoute = () => {
@@ -83,6 +89,7 @@ function App() {
                 {/* Organizer actions */}
                 <Route element={<OrganizerRoute />}>
                   <Route path="/create-event" element={<CreateEvent />} />
+                  <Route path="/events/:id/edit" element={<CreateEvent />} />
                 </Route>
               </Route>
             </Route>

@@ -11,10 +11,25 @@ import {
   Award,
   Sparkles,
   TrendingUp,
-  ListTodo
+  ListTodo,
+  Star,
+  StarHalf
 } from 'lucide-react';
 
 const CATEGORIES = ['Wedding', 'Seminar', 'Concert', 'College Fest', 'Corporate Event'];
+
+const renderStars = (rating) => {
+  const roundedRating = Math.round(parseFloat(rating) * 2) / 2;
+  return (
+    <div style={{ display: 'inline-flex', gap: '3px', color: 'var(--warning)', alignItems: 'center' }}>
+      {[1, 2, 3, 4, 5].map(i => {
+        if (i <= roundedRating) return <Star key={i} size={13} fill="currentColor" stroke="none" />;
+        if (i - 0.5 === roundedRating) return <StarHalf key={i} size={13} fill="currentColor" stroke="none" />;
+        return <Star key={i} size={13} stroke="currentColor" fill="none" style={{ opacity: 0.35 }} />;
+      })}
+    </div>
+  );
+};
 
 // 1. VENUE RECOMMENDATION TOOL
 export const VenueRecommendations = () => {
@@ -35,9 +50,9 @@ export const VenueRecommendations = () => {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="ai-form-card">
-        <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div className="animate-fade-in-up">
+      <form onSubmit={handleSubmit} className="ai-form-card glass-panel animate-scale-in">
+        <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: 700 }}>
           <Sparkles size={20} color="var(--accent-primary)" />
           Venue Finder Recommendation Engine
         </h3>
@@ -47,6 +62,7 @@ export const VenueRecommendations = () => {
             <label className="form-label">Event Type</label>
             <select 
               className="form-control" 
+              style={{ height: '46px' }}
               value={formData.event_type}
               onChange={(e) => setFormData({ ...formData, event_type: e.target.value })}
             >
@@ -59,6 +75,7 @@ export const VenueRecommendations = () => {
             <input 
               type="number" 
               className="form-control" 
+              style={{ height: '46px' }}
               placeholder="e.g. 20000"
               required
               value={formData.budget}
@@ -71,6 +88,7 @@ export const VenueRecommendations = () => {
             <input 
               type="text" 
               className="form-control" 
+              style={{ height: '46px' }}
               placeholder="e.g. San Francisco"
               required
               value={formData.city}
@@ -83,6 +101,7 @@ export const VenueRecommendations = () => {
             <input 
               type="number" 
               className="form-control" 
+              style={{ height: '46px' }}
               placeholder="e.g. 150"
               required
               value={formData.crowd_size}
@@ -91,7 +110,7 @@ export const VenueRecommendations = () => {
           </div>
         </div>
 
-        <button type="submit" className="btn-primary" disabled={loading}>
+        <button type="submit" className="btn-primary" style={{ height: '46px', padding: '0 24px' }} disabled={loading}>
           {loading ? 'Analyzing Venues...' : 'Get Recommendations'}
         </button>
       </form>
@@ -103,33 +122,33 @@ export const VenueRecommendations = () => {
             <div className="typing-dot"></div>
             <div className="typing-dot"></div>
           </div>
-          <p style={{ marginTop: '10px', color: 'var(--text-secondary)' }}>EventAI is evaluating locations...</p>
+          <p style={{ marginTop: '12px', color: 'var(--text-secondary)', fontSize: '14px' }}>EventAI is evaluating local spaces...</p>
         </div>
       )}
 
       {results && results.length > 0 && (
-        <div className="ai-results-card">
-          <h3 style={{ marginBottom: '20px' }}>AI Recommended Venues</h3>
+        <div className="ai-results-card glass-panel" style={{ marginTop: '24px' }}>
+          <h3 style={{ marginBottom: '20px', fontSize: '16px', fontWeight: 700 }}>AI Recommended Venues</h3>
           {results.map((venue, idx) => (
-            <div key={idx} className="result-venue-card">
-              <div className="result-venue-header">
-                <div className="result-venue-title">{venue.name}</div>
-                <div className="result-venue-rating">
-                  <Award size={16} />
-                  <span>{venue.rating} / 5.0</span>
+            <div key={idx} className="result-venue-card glass-panel animate-scale-in" style={{ padding: '20px', marginBottom: '16px', background: 'rgba(var(--card-rgb), 0.4)' }}>
+              <div className="result-venue-header" style={{ marginBottom: '8px' }}>
+                <div className="result-venue-title" style={{ fontSize: '16px', fontWeight: 700 }}>{venue.name}</div>
+                <div className="result-venue-rating" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {renderStars(venue.rating)}
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>({venue.rating})</span>
                 </div>
               </div>
-              <p className="result-venue-text" style={{ fontStyle: 'italic', marginBottom: '8px' }}>
-                {venue.reason}
+              <p className="result-venue-text" style={{ fontStyle: 'italic', marginBottom: '12px', fontSize: '13.5px', color: 'var(--text-secondary)' }}>
+                "{venue.reason}"
               </p>
-              <div className="result-venue-meta">
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <MapPin size={14} /> {venue.address}
+              <div className="result-venue-meta" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '12px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}>
+                  <MapPin size={14} color="var(--accent-primary)" /> {venue.address}
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Users size={14} /> Max Capacity: {venue.capacity}
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}>
+                  <Users size={14} color="var(--accent-primary)" /> Max Capacity: {venue.capacity}
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--success)' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--success)', fontSize: '13px', fontWeight: 600 }}>
                   <DollarSign size={14} /> Cost: {venue.estimated_cost}
                 </span>
               </div>
@@ -140,7 +159,6 @@ export const VenueRecommendations = () => {
     </div>
   );
 };
-
 
 // 2. CROWD PREDICTION TOOL
 export const CrowdPrediction = () => {
@@ -161,9 +179,9 @@ export const CrowdPrediction = () => {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="ai-form-card">
-        <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div className="animate-fade-in-up">
+      <form onSubmit={handleSubmit} className="ai-form-card glass-panel animate-scale-in">
+        <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: 700 }}>
           <TrendingUp size={20} color="var(--accent-primary)" />
           Crowd Turnout Predictor
         </h3>
@@ -173,6 +191,7 @@ export const CrowdPrediction = () => {
             <label className="form-label">Event Category</label>
             <select 
               className="form-control" 
+              style={{ height: '46px' }}
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value, event_type: e.target.value })}
             >
@@ -184,6 +203,7 @@ export const CrowdPrediction = () => {
             <label className="form-label">Day of the Week</label>
             <select 
               className="form-control" 
+              style={{ height: '46px' }}
               value={formData.day_of_week}
               onChange={(e) => setFormData({ ...formData, day_of_week: e.target.value })}
             >
@@ -198,6 +218,7 @@ export const CrowdPrediction = () => {
             <input 
               type="number" 
               className="form-control" 
+              style={{ height: '46px' }}
               placeholder="e.g. 49.99"
               required
               value={formData.ticket_price}
@@ -206,7 +227,7 @@ export const CrowdPrediction = () => {
           </div>
         </div>
 
-        <button type="submit" className="btn-primary" disabled={loading}>
+        <button type="submit" className="btn-primary" style={{ height: '46px', padding: '0 24px' }} disabled={loading}>
           {loading ? 'Predicting Crowd...' : 'Predict Attendance'}
         </button>
       </form>
@@ -218,34 +239,47 @@ export const CrowdPrediction = () => {
             <div className="typing-dot"></div>
             <div className="typing-dot"></div>
           </div>
-          <p style={{ marginTop: '10px', color: 'var(--text-secondary)' }}>EventAI is analyzing crowd patterns...</p>
+          <p style={{ marginTop: '12px', color: 'var(--text-secondary)', fontSize: '14px' }}>EventAI is compiling crowd statistics...</p>
         </div>
       )}
 
       {results && (
-        <div className="ai-results-card">
-          <h3 style={{ marginBottom: '20px' }}>AI Predictive Turnout Analysis</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
-            <div style={{ background: 'rgba(var(--card-rgb), 0.5)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>Turnout Probability</div>
-              <div style={{ fontSize: '36px', fontWeight: 800, color: 'var(--accent-primary)' }}>{results.turnout_percentage}%</div>
+        <div className="ai-results-card glass-panel" style={{ marginTop: '24px' }}>
+          <h3 style={{ marginBottom: '24px', fontSize: '16px', fontWeight: 700 }}>AI Predictive Turnout Analysis</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '24px', alignItems: 'center', marginBottom: '24px' }}>
+            {/* Speedometer Gauge */}
+            <div className="gauge-container">
+              <div className="gauge-circle" style={{ '--percentage': results.turnout_percentage }}>
+                <div className="gauge-inner">
+                  <span style={{ fontSize: '30px', fontWeight: 800, color: 'var(--accent-primary)' }}>{results.turnout_percentage}%</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '2px', fontWeight: 600 }}>Probability</span>
+                </div>
+              </div>
             </div>
-            <div style={{ background: 'rgba(var(--card-rgb), 0.5)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', textAlign: 'center' }}>
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>Predicted Audience Size</div>
-              <div style={{ fontSize: '36px', fontWeight: 800, color: 'var(--success)' }}>{results.predicted_crowd} pax</div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="glass-panel" style={{ padding: '14px 18px', borderRadius: '12px', background: 'rgba(var(--card-rgb), 0.3)', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Audience Outlook</div>
+                <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--success)', marginTop: '4px' }}>
+                  {results.predicted_crowd} attendees
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>Estimated turnout scale</div>
+              </div>
             </div>
           </div>
           
-          <div style={{ background: 'rgba(var(--card-rgb), 0.3)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-            <h4 style={{ fontSize: '14px', color: 'var(--text-primary)', marginBottom: '8px' }}>AI Analyst Insights:</h4>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>{results.insights}</p>
+          <div className="advisor-card glass-panel" style={{ textAlign: 'left', padding: '16px', background: 'rgba(var(--accent-rgb), 0.05)', display: 'block' }}>
+            <h4 style={{ fontSize: '14px', color: 'var(--text-primary)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}>
+              <Sparkles size={16} color="var(--accent-primary)" />
+              AI Turnout Insight
+            </h4>
+            <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>{results.insights}</p>
           </div>
         </div>
       )}
     </div>
   );
 };
-
 
 // 3. BUDGET ESTIMATION TOOL
 export const BudgetEstimation = () => {
@@ -265,10 +299,18 @@ export const BudgetEstimation = () => {
     setLoading(false);
   };
 
+  const getWeightColor = (category) => {
+    const cat = category.toLowerCase();
+    if (cat.includes('venue') || cat.includes('decor')) return 'linear-gradient(90deg, #0ea5e9, #38bdf8)';
+    if (cat.includes('cater') || cat.includes('food')) return 'linear-gradient(90deg, #3b82f6, #60a5fa)';
+    if (cat.includes('av') || cat.includes('production') || cat.includes('sound')) return 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+    return 'linear-gradient(90deg, #10b981, #34d399)';
+  };
+
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="ai-form-card">
-        <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div className="animate-fade-in-up">
+      <form onSubmit={handleSubmit} className="ai-form-card glass-panel animate-scale-in">
+        <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: 700 }}>
           <DollarSign size={20} color="var(--accent-primary)" />
           Budget Estimator Tool
         </h3>
@@ -278,6 +320,7 @@ export const BudgetEstimation = () => {
             <label className="form-label">Event Category</label>
             <select 
               className="form-control" 
+              style={{ height: '46px' }}
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             >
@@ -286,10 +329,11 @@ export const BudgetEstimation = () => {
           </div>
           
           <div className="form-group">
-            <label className="form-label">Crowd Size (People)</label>
+            <label className="form-label">Expected Guest Count</label>
             <input 
               type="number" 
               className="form-control" 
+              style={{ height: '46px' }}
               placeholder="e.g. 200"
               required
               value={formData.crowd_size}
@@ -302,6 +346,7 @@ export const BudgetEstimation = () => {
             <input 
               type="text" 
               className="form-control" 
+              style={{ height: '46px' }}
               placeholder="e.g. Los Angeles"
               required
               value={formData.location}
@@ -310,7 +355,7 @@ export const BudgetEstimation = () => {
           </div>
         </div>
 
-        <button type="submit" className="btn-primary" disabled={loading}>
+        <button type="submit" className="btn-primary" style={{ height: '46px', padding: '0 24px' }} disabled={loading}>
           {loading ? 'Calculating Estimate...' : 'Estimate Budget'}
         </button>
       </form>
@@ -322,40 +367,40 @@ export const BudgetEstimation = () => {
             <div className="typing-dot"></div>
             <div className="typing-dot"></div>
           </div>
-          <p style={{ marginTop: '10px', color: 'var(--text-secondary)' }}>EventAI is evaluating itemized vendor options...</p>
+          <p style={{ marginTop: '12px', color: 'var(--text-secondary)', fontSize: '14px' }}>EventAI is researching itemized vendor options...</p>
         </div>
       )}
 
       {results && (
-        <div className="ai-results-card">
+        <div className="ai-results-card glass-panel" style={{ marginTop: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', marginBottom: '20px' }}>
-            <h3>Estimated Itemized Budget</h3>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--accent-primary)' }}>
-              ${results.total_estimated_cost.toLocaleString()} USD
+            <h3 style={{ fontSize: '16px', fontWeight: 700 }}>Estimated Itemized Budget</h3>
+            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--success)' }}>
+              ${results.total_estimated_cost.toLocaleString()} <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)' }}>USD</span>
             </div>
           </div>
           
-          <h4 style={{ fontSize: '14px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '14px' }}>Cost Breakdown</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
+          <h4 style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '16px', fontWeight: 600, letterSpacing: '0.5px' }}>Cost Breakdown</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginBottom: '28px' }}>
             {results.items.map((item, idx) => {
               const percentage = (item.cost / results.total_estimated_cost) * 100;
               return (
-                <div key={idx}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '6px' }}>
-                    <span>{item.category}</span>
+                <div key={idx} className="animate-scale-in">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px', marginBottom: '6px' }}>
+                    <span style={{ fontWeight: 500 }}>{item.category}</span>
                     <strong>${item.cost.toLocaleString()} ({percentage.toFixed(0)}%)</strong>
                   </div>
                   <div style={{ width: '100%', height: '8px', background: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ width: `${percentage}%`, height: '100%', background: 'var(--accent-gradient)' }}></div>
+                    <div style={{ width: `${percentage}%`, height: '100%', background: getWeightColor(item.category), borderRadius: '4px' }}></div>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <div style={{ background: 'rgba(var(--card-rgb), 0.3)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-            <h4 style={{ fontSize: '14px', color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <HelpCircle size={16} /> Budget Saving Tips:
+          <div className="advisor-card glass-panel" style={{ textAlign: 'left', padding: '16px', background: 'rgba(16, 185, 129, 0.04)', border: '1px solid rgba(16, 185, 129, 0.2)', display: 'block' }}>
+            <h4 style={{ fontSize: '14px', color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}>
+              <HelpCircle size={16} color="var(--success)" /> Budget Saving Strategy:
             </h4>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', whiteSpace: 'pre-line', lineHeight: '1.6' }}>{results.savings_tips}</p>
           </div>
@@ -364,7 +409,6 @@ export const BudgetEstimation = () => {
     </div>
   );
 };
-
 
 // 4. AUTO SCHEDULE GENERATOR TOOL
 export const ScheduleGenerator = () => {
@@ -385,11 +429,11 @@ export const ScheduleGenerator = () => {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="ai-form-card">
-        <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div className="animate-fade-in-up">
+      <form onSubmit={handleSubmit} className="ai-form-card glass-panel animate-scale-in">
+        <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '18px', fontWeight: 700 }}>
           <ListTodo size={20} color="var(--accent-primary)" />
-          Auto Schedule Itinerary Generator
+          Auto Itinerary Timeline Generator
         </h3>
         
         <div className="form-grid">
@@ -398,6 +442,7 @@ export const ScheduleGenerator = () => {
             <input 
               type="text" 
               className="form-control" 
+              style={{ height: '46px' }}
               placeholder="e.g. Annual Design Summit"
               required
               value={formData.title}
@@ -409,6 +454,7 @@ export const ScheduleGenerator = () => {
             <label className="form-label">Event Category</label>
             <select 
               className="form-control" 
+              style={{ height: '46px' }}
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             >
@@ -421,6 +467,7 @@ export const ScheduleGenerator = () => {
             <input 
               type="date" 
               className="form-control" 
+              style={{ height: '46px' }}
               required
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
@@ -432,6 +479,7 @@ export const ScheduleGenerator = () => {
             <input 
               type="time" 
               className="form-control" 
+              style={{ height: '46px' }}
               required
               value={formData.time}
               onChange={(e) => setFormData({ ...formData, time: e.target.value })}
@@ -444,6 +492,7 @@ export const ScheduleGenerator = () => {
               type="number" 
               step="0.5"
               className="form-control" 
+              style={{ height: '46px' }}
               placeholder="e.g. 4.5"
               required
               value={formData.duration_hours}
@@ -452,7 +501,7 @@ export const ScheduleGenerator = () => {
           </div>
         </div>
 
-        <button type="submit" className="btn-primary" disabled={loading}>
+        <button type="submit" className="btn-primary" style={{ height: '46px', padding: '0 24px' }} disabled={loading}>
           {loading ? 'Synthesizing Timeline...' : 'Generate Itinerary'}
         </button>
       </form>
@@ -464,36 +513,36 @@ export const ScheduleGenerator = () => {
             <div className="typing-dot"></div>
             <div className="typing-dot"></div>
           </div>
-          <p style={{ marginTop: '10px', color: 'var(--text-secondary)' }}>EventAI is arranging sessions chronologically...</p>
+          <p style={{ marginTop: '12px', color: 'var(--text-secondary)', fontSize: '14px' }}>EventAI is arranging sessions chronologically...</p>
         </div>
       )}
 
       {results && (
-        <div className="ai-results-card">
-          <h3 style={{ marginBottom: '24px' }}>Generated Event Schedule</h3>
+        <div className="ai-results-card glass-panel" style={{ marginTop: '24px' }}>
+          <h3 style={{ marginBottom: '28px', fontSize: '16px', fontWeight: 700 }}>Generated Event Schedule</h3>
           
           {/* Vertical Timeline */}
-          <div style={{ position: 'relative', paddingLeft: '30px', borderLeft: '2px solid var(--accent-primary)', marginLeft: '10px', display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '32px' }}>
+          <div style={{ position: 'relative', paddingLeft: '32px', borderLeft: '2.5px dashed var(--accent-primary)', marginLeft: '12px', display: 'flex', flexDirection: 'column', gap: '26px', marginBottom: '32px' }}>
             {results.schedule.map((item, idx) => (
-              <div key={idx} style={{ position: 'relative' }}>
-                {/* Bullet */}
-                <div style={{ position: 'absolute', left: '-37px', top: '4px', width: '12px', height: '12px', borderRadius: '50%', background: 'var(--accent-primary)', border: '4px solid var(--bg-secondary)', boxSizing: 'content-box' }}></div>
+              <div key={idx} className="animate-scale-in" style={{ position: 'relative' }}>
+                {/* Bullet node */}
+                <div style={{ position: 'absolute', left: '-39.5px', top: '2px', width: '11px', height: '11px', borderRadius: '50%', background: 'var(--accent-primary)', border: '4px solid var(--bg-secondary)', boxSizing: 'content-box', boxShadow: '0 0 0 3px rgba(var(--accent-rgb), 0.2)' }}></div>
                 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 600, color: 'var(--accent-primary)', background: 'rgba(139, 92, 246, 0.1)', padding: '2px 8px', borderRadius: '6px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11.5px', fontWeight: 700, color: 'var(--accent-primary)', background: 'rgba(var(--accent-rgb), 0.12)', padding: '3px 10px', borderRadius: '8px' }}>
                       <Clock size={12} /> {item.time}
                     </span>
                   </div>
-                  <div style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text-primary)' }}>{item.activity}</div>
+                  <div style={{ fontSize: '14.5px', fontWeight: 600, color: 'var(--text-primary)' }}>{item.activity}</div>
                 </div>
               </div>
             ))}
           </div>
 
-          <div style={{ background: 'rgba(var(--card-rgb), 0.3)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-            <h4 style={{ fontSize: '14px', color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Calendar size={16} /> Planner Notes:
+          <div className="advisor-card glass-panel" style={{ textAlign: 'left', padding: '16px', background: 'rgba(var(--accent-rgb), 0.04)', display: 'block' }}>
+            <h4 style={{ fontSize: '14px', color: 'var(--text-primary)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}>
+              <Calendar size={16} color="var(--accent-primary)" /> Planner Notes:
             </h4>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>{results.notes}</p>
           </div>
@@ -502,3 +551,4 @@ export const ScheduleGenerator = () => {
     </div>
   );
 };
+

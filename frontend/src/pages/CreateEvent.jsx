@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../context/AuthContext';
 import Header from '../components/Header';
 import { Calendar, AlertCircle } from 'lucide-react';
@@ -7,6 +7,10 @@ import { Calendar, AlertCircle } from 'lucide-react';
 const CATEGORIES = ['Wedding', 'Seminar', 'Concert', 'College Fest', 'Corporate Event'];
 
 const CreateEvent = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const isEdit = !!id;
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -22,7 +26,36 @@ const CreateEvent = () => {
   const [banner, setBanner] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [fetching, setFetching] = useState(false);
+
+  useEffect(() => {
+    if (isEdit) {
+      const fetchEvent = async () => {
+        setFetching(true);
+        try {
+          const response = await api.get(`events/${id}/`);
+          const ev = response.data;
+          setFormData({
+            title: ev.title,
+            description: ev.description,
+            category: ev.category,
+            date: ev.date,
+            time: ev.time.substring(0, 5), // Format HH:MM
+            city: ev.city,
+            venue: ev.venue,
+            budget: ev.budget,
+            ticket_price: ev.ticket_price,
+            crowd_limit: ev.crowd_limit
+          });
+        } catch (err) {
+          console.error("Error loading event for editing", err);
+          setError("Failed to load event details.");
+        }
+        setFetching(false);
+      };
+      fetchEvent();
+    }
+  }, [id, isEdit]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -47,11 +80,19 @@ const CreateEvent = () => {
     }
 
     try {
-      await api.post('events/', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      if (isEdit) {
+        await api.put(`events/${id}/`, data, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        await api.post('events/', data, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      }
       navigate('/events');
     } catch (err) {
       console.error(err);
@@ -63,25 +104,40 @@ const CreateEvent = () => {
             .join('\n')
         );
       } else {
-        setError("Failed to create event. Please verify all inputs.");
+        setError(isEdit ? "Failed to update event. Please verify all inputs." : "Failed to create event. Please verify all inputs.");
       }
     }
     setLoading(false);
   };
 
+  if (fetching) {
+    return (
+      <div className="main-layout">
+        <Header title="Staging - Edit Event" />
+        <div className="content-body" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+          <div className="typing-indicator">
+            <div className="typing-dot"></div>
+            <div className="typing-dot"></div>
+            <div className="typing-dot"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="main-layout">
-      <Header title="Staging - Create Event" />
+    <div className="main-layout animate-fade-in-up">
+      <Header title={isEdit ? "Staging - Edit Event" : "Staging - Create Event"} />
 
       <div className="content-body">
-        <div className="form-card">
+        <div className="form-card glass-panel">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
             <Calendar size={28} color="var(--accent-primary)" />
-            <h2 style={{ fontSize: '22px', fontWeight: 800 }}>Publish a New Event</h2>
+            <h2 style={{ fontSize: '22px', fontWeight: 800 }}>{isEdit ? "Edit Event Details" : "Publish a New Event"}</h2>
           </div>
 
           {error && (
-            <div className="alert alert-danger" style={{ whiteSpace: 'pre-line' }}>
+            <div className="alert alert-danger" style={{ whiteSpace: 'pre-line', marginBottom: '24px' }}>
               <AlertCircle size={18} />
               <span>{error}</span>
             </div>
@@ -230,12 +286,12 @@ const CreateEvent = () => {
               </div>
             </div>
 
-            <div className="form-btn-container">
+            <div className="form-btn-container" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '24px', marginTop: '12px' }}>
               <button type="button" className="btn-secondary" onClick={() => navigate('/events')}>
                 Cancel
               </button>
               <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? 'Creating event...' : 'Publish Event'}
+                {loading ? (isEdit ? 'Saving changes...' : 'Creating event...') : (isEdit ? 'Save Changes' : 'Publish Event')}
               </button>
             </div>
           </form>

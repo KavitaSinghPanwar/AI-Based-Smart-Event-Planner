@@ -31,7 +31,7 @@ const BookingsList = () => {
   };
 
   return (
-    <div className="main-layout">
+    <div className="main-layout animate-fade-in-up">
       <Header title={user.role === 'user' ? 'My Bookings & Passes' : 'Managed Bookings Feed'} />
 
       <div className="content-body">
@@ -44,7 +44,8 @@ const BookingsList = () => {
             </div>
           </div>
         ) : (
-          <div className="table-card">
+          <div className="table-card glass-panel">
+
             <div className="table-header-container">
               <h3 style={{ fontSize: '18px', fontWeight: 700 }}>
                 {user.role === 'user' ? 'Purchased Tickets' : 'Participant Attendee Bookings'}
@@ -110,56 +111,67 @@ const BookingsList = () => {
       {/* Ticket Modal */}
       {showModal && activeBooking && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ position: 'relative' }}>
-            <div className="modal-header">
-              <h3 className="modal-title">Admission Ticket Pass</h3>
+          <div className="modal-content glass-panel" style={{ maxWidth: '420px', padding: '24px 32px' }}>
+            <div className="modal-header" style={{ marginBottom: '16px' }}>
+              <h3 className="modal-title">Ticket Pass</h3>
               <button className="modal-close-btn" onClick={() => setShowModal(false)}>
                 <X size={20} />
               </button>
             </div>
 
-            <div className="qr-code-display">
-              {activeBooking.qr_code_image ? (
-                <img src={`http://localhost:8000${activeBooking.qr_code_image}`} alt="Ticket QR Code" />
-              ) : (
-                <div style={{ width: '200px', height: '200px', background: '#ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  QR Code Generating...
+            <div className="ticket-wrapper">
+              <div className="ticket-pass animate-scale-in">
+                <div className="ticket-header">
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Admission Ticket</h3>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>EventAI Smart Pass</div>
                 </div>
-              )}
+                
+                <div className="ticket-body">
+                  <div className="qr-code-display" style={{ marginBottom: '20px', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px', background: 'white' }}>
+                    {activeBooking.qr_code_image ? (
+                      <img src={`http://localhost:8000${activeBooking.qr_code_image}`} alt="Ticket QR Code" style={{ display: 'block', width: '160px', height: '160px' }} />
+                    ) : (
+                      <div style={{ width: '160px', height: '160px', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '13px' }}>
+                        Generating Pass...
+                      </div>
+                    )}
+                  </div>
+                  
+                  <h4 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '6px', textAlign: 'center', color: 'var(--text-primary)' }}>
+                    {activeBooking.event_details?.title}
+                  </h4>
+                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px', textAlign: 'center', lineHeight: '1.4' }}>
+                    {activeBooking.event_details?.venue}, {activeBooking.event_details?.city}<br />
+                    {new Date(activeBooking.event_details?.date).toLocaleDateString()} at {activeBooking.event_details?.time.substring(0, 5)}
+                  </p>
+
+                  <div style={{ width: '100%', borderTop: '1px dashed var(--border-color)', paddingTop: '16px', fontSize: '13.5px', textAlign: 'left' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Reference ID:</span>
+                      <strong style={{ color: 'var(--text-primary)' }}>#BK-{activeBooking.id}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Ticket Holder:</span>
+                      <strong style={{ color: 'var(--text-primary)' }}>{activeBooking.user_details?.username}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Quantity:</span>
+                      <strong style={{ color: 'var(--text-primary)' }}>{activeBooking.ticket_quantity} pass(es)</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Seats:</span>
+                      <strong style={{ color: 'var(--accent-primary)' }}>{activeBooking.seat_numbers}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>Amount Paid:</span>
+                      <strong style={{ color: 'var(--success)' }}>${parseFloat(activeBooking.total_price).toFixed(2)}</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <h4 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>
-              {activeBooking.event_details?.title}
-            </h4>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px' }}>
-              {activeBooking.event_details?.venue}, {activeBooking.event_details?.city}<br />
-              {new Date(activeBooking.event_details?.date).toLocaleDateString()} at {activeBooking.event_details?.time.substring(0, 5)}
-            </p>
-
-            <div style={{ background: 'var(--input-bg)', padding: '14px', borderRadius: '12px', textAlign: 'left', fontSize: '14px', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Booking Reference:</span>
-                <strong>#BK-{activeBooking.id}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Ticket Holder:</span>
-                <strong>{activeBooking.user_details?.username}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Quantity:</span>
-                <strong>{activeBooking.ticket_quantity} pass(es)</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Assigned Seats:</span>
-                <strong style={{ color: 'var(--accent-primary)' }}>{activeBooking.seat_numbers}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Amount Paid:</span>
-                <strong style={{ color: 'var(--success)' }}>${parseFloat(activeBooking.total_price).toFixed(2)}</strong>
-              </div>
-            </div>
-
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '16px', textAlign: 'center' }}>
               Scan QR code at the entrance for automated check-in and seat verification.
             </p>
           </div>
@@ -170,3 +182,4 @@ const BookingsList = () => {
 };
 
 export default BookingsList;
+

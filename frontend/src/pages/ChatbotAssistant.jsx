@@ -3,6 +3,12 @@ import { api } from '../context/AuthContext';
 import Header from '../components/Header';
 import { Send, Sparkles } from 'lucide-react';
 
+const SUGGESTED_PROMPTS = [
+  "Draft a 4-hour Seminar timeline",
+  "Suggest budget for 200 guests in Seattle",
+  "Will a Saturday concert draw good crowd?"
+];
+
 const ChatbotAssistant = () => {
   const [messages, setMessages] = useState([
     {
@@ -15,7 +21,6 @@ const ChatbotAssistant = () => {
   
   const chatEndRef = useRef(null);
 
-  // Auto scroll to bottom
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -24,12 +29,10 @@ const ChatbotAssistant = () => {
     scrollToBottom();
   }, [messages, loading]);
 
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!input.trim() || loading) return;
+  const triggerSend = async (textToSend) => {
+    const userMessage = textToSend.trim();
+    if (!userMessage) return;
 
-    const userMessage = input.trim();
-    setInput('');
     setMessages(prev => [...prev, { text: userMessage, isUser: true }]);
     setLoading(true);
 
@@ -50,31 +53,42 @@ const ChatbotAssistant = () => {
     setLoading(false);
   };
 
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!input.trim() || loading) return;
+
+    const val = input;
+    setInput('');
+    await triggerSend(val);
+  };
+
+  const handleSuggestedPromptClick = async (prompt) => {
+    if (loading) return;
+    await triggerSend(prompt);
+  };
+
   // Helper to format bot markdown text to readable HTML
   const renderMessageText = (text) => {
-    // Simple markdown parsing for bolding and lists
     let html = text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/^\*\s(.*)$/gm, '<li>$1</li>');
       
-    // Wrap lists
     if (html.includes('<li>')) {
       html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
     }
     
-    // Replace newlines with breaks
     html = html.replace(/\n/g, '<br/>');
 
     return <div dangerouslySetInnerHTML={{ __html: html }} />;
   };
 
   return (
-    <div className="main-layout">
+    <div className="main-layout animate-fade-in-up">
       <Header title="AI Chatbot Assistant" />
 
       <div className="content-body" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
-        <div className="chat-container">
+        <div className="chat-container glass-panel">
           <div className="chat-header">
             <div className="chat-avatar">
               <Sparkles size={20} />
@@ -87,7 +101,7 @@ const ChatbotAssistant = () => {
 
           <div className="chat-messages">
             {messages.map((msg, idx) => (
-              <div key={idx} className={`chat-message-row ${msg.isUser ? 'user' : 'bot'}`}>
+              <div key={idx} className={`chat-message-row ${msg.isUser ? 'user' : 'bot'} animate-scale-in`}>
                 <div className="chat-bubble">
                   {msg.isUser ? msg.text : renderMessageText(msg.text)}
                 </div>
@@ -109,6 +123,26 @@ const ChatbotAssistant = () => {
             <div ref={chatEndRef} />
           </div>
 
+          {/* Quick Suggested Prompt Chips */}
+          {messages.length === 1 && (
+            <div className="animate-scale-in" style={{ padding: '0 24px 16px 24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 600 }}>Suggested planning starters:</p>
+              <div className="prompt-chips-container" style={{ padding: 0 }}>
+                {SUGGESTED_PROMPTS.map((prompt, idx) => (
+                  <button 
+                    key={idx} 
+                    type="button"
+                    className="prompt-chip"
+                    onClick={() => handleSuggestedPromptClick(prompt)}
+                    disabled={loading}
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSend} className="chat-input-area">
             <input 
               type="text" 
@@ -129,3 +163,4 @@ const ChatbotAssistant = () => {
 };
 
 export default ChatbotAssistant;
+

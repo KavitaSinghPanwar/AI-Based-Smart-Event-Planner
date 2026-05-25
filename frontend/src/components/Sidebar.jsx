@@ -11,13 +11,17 @@ import {
   LogOut 
 } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   const { user, logout } = useAuth();
 
   if (!user) return null;
 
+  const handleLinkClick = () => {
+    if (setMobileOpen) setMobileOpen(false);
+  };
+
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-logo">
         <BrainCircuit size={28} />
         <span>EventAI</span>
@@ -25,13 +29,22 @@ const Sidebar = () => {
       
       <ul className="sidebar-menu">
         <li className="sidebar-item">
-          <NavLink to="/" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} end>
+          <NavLink 
+            to="/" 
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} 
+            onClick={handleLinkClick}
+            end
+          >
             <LayoutDashboard size={20} />
             <span>Dashboard</span>
           </NavLink>
         </li>
         <li className="sidebar-item">
-          <NavLink to="/events" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+          <NavLink 
+            to="/events" 
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            onClick={handleLinkClick}
+          >
             <Calendar size={20} />
             <span>Event Hub</span>
           </NavLink>
@@ -39,7 +52,11 @@ const Sidebar = () => {
         
         {(user.role === 'organizer' || user.role === 'admin') && (
           <li className="sidebar-item">
-            <NavLink to="/create-event" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+            <NavLink 
+              to="/create-event" 
+              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              onClick={handleLinkClick}
+            >
               <PlusCircle size={20} />
               <span>Create Event</span>
             </NavLink>
@@ -47,19 +64,31 @@ const Sidebar = () => {
         )}
         
         <li className="sidebar-item">
-          <NavLink to="/bookings" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+          <NavLink 
+            to="/bookings" 
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            onClick={handleLinkClick}
+          >
             <Ticket size={20} />
             <span>{user.role === 'user' ? 'My Bookings' : 'Bookings List'}</span>
           </NavLink>
         </li>
         <li className="sidebar-item">
-          <NavLink to="/ai-planner" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+          <NavLink 
+            to="/ai-planner" 
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            onClick={handleLinkClick}
+          >
             <BrainCircuit size={20} />
             <span>AI Planner</span>
           </NavLink>
         </li>
         <li className="sidebar-item">
-          <NavLink to="/chatbot" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+          <NavLink 
+            to="/chatbot" 
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            onClick={handleLinkClick}
+          >
             <MessageSquare size={20} />
             <span>AI Chatbot</span>
           </NavLink>
@@ -84,5 +113,6 @@ const Sidebar = () => {
     </div>
   );
 };
+
 
 export default Sidebar;
