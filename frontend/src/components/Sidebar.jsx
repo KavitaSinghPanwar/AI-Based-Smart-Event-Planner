@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   LayoutDashboard, 
@@ -30,7 +30,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       <ul className="sidebar-menu">
         <li className="sidebar-item">
           <NavLink 
-            to="/" 
+            to="/dashboard" 
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} 
             onClick={handleLinkClick}
             end
@@ -96,15 +96,33 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       </ul>
 
       <div className="sidebar-footer">
-        <div className="sidebar-user">
+        <Link 
+          to="/profile" 
+          className="sidebar-user" 
+          onClick={handleLinkClick}
+          style={{ 
+            textDecoration: 'none', 
+            color: 'inherit', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '12px', 
+            padding: '8px 12px', 
+            borderRadius: '12px', 
+            transition: 'background-color 0.2s', 
+            width: '100%',
+            boxSizing: 'border-box'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+        >
           <div className="sidebar-user-avatar">
             {user.username.substring(0, 2).toUpperCase()}
           </div>
           <div className="sidebar-user-info">
             <div className="sidebar-username">{user.username}</div>
-            <div className="sidebar-user-role">{user.role}</div>
+            <div className="sidebar-user-role">{user.role} (edit profile)</div>
           </div>
-        </div>
+        </Link>
         <button className="btn-logout" onClick={logout}>
           <LogOut size={16} />
           <span>Logout</span>

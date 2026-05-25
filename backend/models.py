@@ -11,6 +11,10 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(String, default="user") # 'admin', 'organizer', 'user'
+    full_name = Column(String, nullable=True)
+    bio = Column(Text, nullable=True)
+    phone = Column(String, nullable=True)
+    city = Column(String, nullable=True)
 
     organized_events = relationship("Event", back_populates="organizer", cascade="all, delete-orphan")
     bookings = relationship("Booking", back_populates="user", cascade="all, delete-orphan")

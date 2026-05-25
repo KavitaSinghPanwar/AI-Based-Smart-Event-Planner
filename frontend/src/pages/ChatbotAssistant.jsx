@@ -4,9 +4,11 @@ import Header from '../components/Header';
 import { Send, Sparkles } from 'lucide-react';
 
 const SUGGESTED_PROMPTS = [
-  "Draft a 4-hour Seminar timeline",
-  "Suggest budget for 200 guests in Seattle",
-  "Will a Saturday concert draw good crowd?"
+  "How do I plan a wedding?",
+  "Draft a BTS concert checklist",
+  "Explain college fest sponsorships",
+  "Standard corporate seminar timeline",
+  "Show budget planning strategies"
 ];
 
 const ChatbotAssistant = () => {
@@ -124,24 +126,22 @@ const ChatbotAssistant = () => {
           </div>
 
           {/* Quick Suggested Prompt Chips */}
-          {messages.length === 1 && (
-            <div className="animate-scale-in" style={{ padding: '0 24px 16px 24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 600 }}>Suggested planning starters:</p>
-              <div className="prompt-chips-container" style={{ padding: 0 }}>
-                {SUGGESTED_PROMPTS.map((prompt, idx) => (
-                  <button 
-                    key={idx} 
-                    type="button"
-                    className="prompt-chip"
-                    onClick={() => handleSuggestedPromptClick(prompt)}
-                    disabled={loading}
-                  >
-                    {prompt}
-                  </button>
-                ))}
-              </div>
+          <div style={{ padding: '12px 24px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div className="prompt-chips-container" style={{ padding: 0, display: 'flex', gap: '8px', overflowX: 'auto', whiteSpace: 'nowrap', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {SUGGESTED_PROMPTS.map((prompt, idx) => (
+                <button 
+                  key={idx} 
+                  type="button"
+                  className="prompt-chip"
+                  style={{ flexShrink: 0, padding: '8px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s', border: '1px solid var(--border-color)', background: 'rgba(var(--accent-rgb), 0.05)', color: 'var(--text-primary)' }}
+                  onClick={() => handleSuggestedPromptClick(prompt)}
+                  disabled={loading}
+                >
+                  {prompt}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
 
           <form onSubmit={handleSend} className="chat-input-area">
             <input 

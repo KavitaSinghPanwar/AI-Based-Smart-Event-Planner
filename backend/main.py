@@ -57,6 +57,7 @@ def make_event_response(event: models.Event) -> dict:
         "budget": event.budget,
         "ticket_price": event.ticket_price,
         "crowd_limit": event.crowd_limit,
+        "booked_count": sum(b.ticket_quantity for b in event.bookings),
         "banner": event.banner,
         "organizer": event.organizer_id,
         "organizer_details": {
@@ -165,6 +166,41 @@ def login(login_data: schemas.LoginRequest, db: Session = Depends(database.get_d
 
 @app.get("/api/auth/profile/", response_model=schemas.UserResponse)
 def get_profile(current_user: models.User = Depends(auth.get_current_user)):
+    return current_user
+
+
+@app.put("/api/auth/profile/", response_model=schemas.UserResponse)
+def update_profile(
+    profile_data: schemas.UserUpdate,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    if profile_data.username and profile_data.username != current_user.username:
+        # Check uniqueness
+        if db.query(models.User).filter(models.User.username == profile_data.username).first():
+            raise HTTPException(status_code=400, detail="A user with that username already exists.")
+        current_user.username = profile_data.username
+        
+    if profile_data.email and profile_data.email != current_user.email:
+        # Check uniqueness
+        if db.query(models.User).filter(models.User.email == profile_data.email).first():
+            raise HTTPException(status_code=400, detail="A user with that email address already exists.")
+        current_user.email = profile_data.email
+        
+    if profile_data.full_name is not None:
+        current_user.full_name = profile_data.full_name
+    if profile_data.bio is not None:
+        current_user.bio = profile_data.bio
+    if profile_data.phone is not None:
+        current_user.phone = profile_data.phone
+    if profile_data.city is not None:
+        current_user.city = profile_data.city
+        
+    if profile_data.password:
+        current_user.hashed_password = auth.get_password_hash(profile_data.password)
+        
+    db.commit()
+    db.refresh(current_user)
     return current_user
 
 
@@ -570,23 +606,59 @@ def get_dashboard_stats(db: Session = Depends(database.get_db), current_user: mo
 # ==========================================
 
 @app.post("/api/ai/recommend-venue/")
-def ai_recommend_venue(req: schemas.AIRecommendVenueRequest):
+def ai_recommend_venue(req: schemas.AIRecommendVenueRequest, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
     recs = ai_utils.get_venue_recommendations(req.event_type, req.budget, req.city, req.crowd_size)
+    
+    # Save notification
+    notif = models.Notification(
+        user_id=current_user.id,
+        title="AI Venue Plan Generated 📍",
+        message=f"Recommended 3 suitable venues for your {req.event_type} event in {req.city}."
+    )
+    db.add(notif)
+    db.commit()
     return recs
 
 @app.post("/api/ai/predict-crowd/")
-def ai_predict_crowd(req: schemas.AIPredictCrowdRequest):
+def ai_predict_crowd(req: schemas.AIPredictCrowdRequest, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
     pred = ai_utils.predict_crowd_turnout(req.event_type, req.category, req.day_of_week, req.ticket_price)
+    
+    # Save notification
+    notif = models.Notification(
+        user_id=current_user.id,
+        title="AI Crowd Turnout Predicted 📈",
+        message=f"Turnout probability calculated at {pred.get('turnout_percentage')}% for category {req.category}."
+    )
+    db.add(notif)
+    db.commit()
     return pred
 
 @app.post("/api/ai/estimate-budget/")
-def ai_estimate_budget(req: schemas.AIEstimateBudgetRequest):
+def ai_estimate_budget(req: schemas.AIEstimateBudgetRequest, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
     budget = ai_utils.estimate_event_budget(req.category, req.crowd_size, req.location)
+    
+    # Save notification
+    notif = models.Notification(
+        user_id=current_user.id,
+        title="AI Budget Synthesized 💰",
+        message=f"Estimated total budget of ${budget.get('total_estimated_cost'):,} USD for a guest count of {req.crowd_size}."
+    )
+    db.add(notif)
+    db.commit()
     return budget
 
 @app.post("/api/ai/generate-schedule/")
-def ai_generate_schedule(req: schemas.AIGenerateScheduleRequest):
+def ai_generate_schedule(req: schemas.AIGenerateScheduleRequest, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
     sched = ai_utils.generate_event_schedule(req.title, req.category, req.date, req.time, req.duration_hours)
+    
+    # Save notification
+    notif = models.Notification(
+        user_id=current_user.id,
+        title="AI Itinerary Compiled 📅",
+        message=f"Created timeline schedule for '{req.title}' on {req.date}."
+    )
+    db.add(notif)
+    db.commit()
     return sched
 
 @app.post("/api/ai/chatbot/")

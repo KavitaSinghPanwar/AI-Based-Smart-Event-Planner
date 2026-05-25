@@ -183,18 +183,33 @@ const EventDetails = () => {
             </div>
 
             <div className="details-content-card glass-panel" style={{ padding: '32px' }}>
-              <span className={getCategoryBadgeClass(event.category)} style={{ marginBottom: '16px', display: 'inline-block' }}>
-                {event.category}
-              </span>
-              <h1 className="details-title" style={{ marginTop: '8px' }}>{event.title}</h1>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <span className={getCategoryBadgeClass(event.category)}>
+                  {event.category}
+                </span>
+                
+                {/* Remaining Seats Indicator */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {event.crowd_limit - (event.booked_count || 0) <= 0 ? (
+                    <span className="badge badge-danger">SOLD OUT</span>
+                  ) : (
+                    <span className="badge badge-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <Users size={12} />
+                      {event.crowd_limit - (event.booked_count || 0)} spots left
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <h1 className="details-title" style={{ marginTop: '16px', marginBottom: '8px' }}>{event.title}</h1>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '24px' }}>
                 <span>Hosted by <strong>{event.organizer_details?.username}</strong></span>
               </div>
 
-              <p className="details-desc">{event.description}</p>
+              <p className="details-desc" style={{ marginBottom: '28px' }}>{event.description}</p>
 
-              <div className="details-info-grid">
+              <div className="details-info-grid" style={{ marginBottom: '32px' }}>
                 <div className="details-info-item">
                   <div className="stat-icon-wrapper" style={{ background: 'rgba(var(--accent-rgb), 0.12)' }}><Calendar size={18} /></div>
                   <div>
@@ -223,8 +238,136 @@ const EventDetails = () => {
                   <div className="stat-icon-wrapper" style={{ background: 'rgba(var(--accent-rgb), 0.12)' }}><Users size={18} /></div>
                   <div>
                     <div className="details-info-label">Capacity</div>
-                    <div className="details-info-value">{event.crowd_limit} People</div>
+                    <div className="details-info-value">{event.crowd_limit} People ({event.booked_count || 0} registered)</div>
                   </div>
+                </div>
+              </div>
+
+              {/* Event Timeline / Itinerary section */}
+              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '28px', marginBottom: '28px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Clock size={18} color="var(--accent-primary)" />
+                  Event Itinerary Timeline
+                </h3>
+                
+                <div style={{ 
+                  position: 'relative', 
+                  paddingLeft: '24px', 
+                  borderLeft: '2px dashed var(--accent-primary)', 
+                  marginLeft: '8px', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '20px' 
+                }}>
+                  {(() => {
+                    const timeline = (() => {
+                      const cat = event.category ? event.category.toLowerCase() : '';
+                      let startHour = 18;
+                      let startMin = 0;
+                      try {
+                        const parts = event.time.split(':');
+                        startHour = parseInt(parts[0]);
+                        startMin = parseInt(parts[1]);
+                      } catch (e) {}
+
+                      const formatTime = (h, m) => {
+                        const hh = h % 24;
+                        const ampm = hh >= 12 ? 'PM' : 'AM';
+                        const displayHour = hh % 12 === 0 ? 12 : hh % 12;
+                        const displayMin = m < 10 ? `0${m}` : m;
+                        return `${displayHour}:${displayMin} ${ampm}`;
+                      };
+
+                      if (cat.includes('wedding')) {
+                        return [
+                          { time: formatTime(startHour, startMin), activity: "Guests Arrival & Welcome Drinks" },
+                          { time: formatTime(startHour + 1, startMin), activity: "Vows Exchange & Wedding Ceremonies" },
+                          { time: formatTime(startHour + 2, startMin), activity: "Photoshoots & Toast Speeches" },
+                          { time: formatTime(startHour + 3, startMin), activity: "Grand Banquet Dinner & DJ Dance Floor" }
+                        ];
+                      } else if (cat.includes('seminar') || cat.includes('corporate') || cat.includes('business')) {
+                        return [
+                          { time: formatTime(startHour, startMin), activity: "Registrations Desk opens & Badge pickup" },
+                          { time: formatTime(startHour, startMin + 30), activity: "Keynote Address & Guest Speakers Welcome" },
+                          { time: formatTime(startHour + 1, startMin + 45), activity: "Core Presentations & Panel Discussions" },
+                          { time: formatTime(startHour + 2, startMin + 45), activity: "Interactive Q&A Session & Coffee Networking" }
+                        ];
+                      } else if (cat.includes('concert') || cat.includes('music')) {
+                        return [
+                          { time: formatTime(startHour, startMin), activity: "Doors Open & Security Check-In Scans" },
+                          { time: formatTime(startHour + 1, startMin), activity: "Opening Artist / Live DJ Set" },
+                          { time: formatTime(startHour + 2, startMin + 15), activity: "Main Performance Live Act" },
+                          { time: formatTime(startHour + 4, startMin), activity: "Merchandise Clearance & Event Close" }
+                        ];
+                      } else {
+                        return [
+                          { time: formatTime(startHour, startMin), activity: "Inaugural Ceremony & Lighting of Lamp" },
+                          { time: formatTime(startHour + 1, startMin), activity: "Cultural Stage Competitions & Social Panels" },
+                          { time: formatTime(startHour + 2, startMin + 30), activity: "Celebrity Guest Spotlights / Concert" },
+                          { time: formatTime(startHour + 4, startMin), activity: "Awards Announcements & Closing Speeches" }
+                        ];
+                      }
+                    })();
+
+                    return timeline.map((item, idx) => (
+                      <div key={idx} style={{ position: 'relative' }}>
+                        {/* Dot node */}
+                        <div style={{ 
+                          position: 'absolute', 
+                          left: '-30.5px', 
+                          top: '3px', 
+                          width: '9px', 
+                          height: '9px', 
+                          borderRadius: '50%', 
+                          background: 'var(--accent-primary)', 
+                          border: '3px solid var(--bg-secondary)', 
+                          boxSizing: 'content-box' 
+                        }}></div>
+                        
+                        <div style={{ display: 'flex', gap: '16px', alignItems: 'baseline', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent-primary)', minWidth: '70px' }}>
+                            {item.time}
+                          </span>
+                          <span style={{ fontSize: '13.5px', color: 'var(--text-primary)', fontWeight: 500 }}>
+                            {item.activity}
+                          </span>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+
+              {/* Organizer Info Card */}
+              <div style={{ 
+                borderTop: '1px solid var(--border-color)', 
+                paddingTop: '28px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '16px',
+                background: 'rgba(var(--card-rgb), 0.2)',
+                borderRadius: '12px',
+                padding: '16px 20px',
+                border: '1px solid var(--border-color)'
+              }}>
+                <div style={{ 
+                  width: '44px', 
+                  height: '44px', 
+                  borderRadius: '50%', 
+                  background: 'linear-gradient(135deg, var(--accent-primary), #a855f7)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  color: 'white', 
+                  fontWeight: 700,
+                  fontSize: '15px' 
+                }}>
+                  {event.organizer_details?.username?.substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>EVENT HOST</div>
+                  <h4 style={{ fontSize: '14.5px', fontWeight: 700, margin: '2px 0 4px 0', color: 'var(--text-primary)' }}>{event.organizer_details?.username}</h4>
+                  <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: 0 }}>Contact: {event.organizer_details?.email}</p>
                 </div>
               </div>
             </div>

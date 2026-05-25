@@ -326,39 +326,143 @@ def get_chatbot_response(user_message, conversation_history=None):
         return result
         
     # Fallback Chat responses based on keyword matching
-    msg = user_message.lower()
-    if "hello" in msg or "hi" in msg:
+    msg = user_message.lower().strip()
+    
+    if any(k in msg for k in ["hello", "hi", "hey", "greetings"]):
         return (
-            "Hello! I am **EventAI**, your smart event planning assistant. How can I help you today?\n\n"
-            "I can help you:\n"
-            "* Estimate event budgets\n"
-            "* Predict crowd turnout\n"
-            "* Recommend local venue spaces\n"
-            "* Design event timelines and schedules"
+            "Hello! I am **EventAI**, your smart event planning assistant. How can I help you today? 👋\n\n"
+            "I can help you with:\n"
+            "* 💰 **Budget Estimation** & savings tips\n"
+            "* 📈 **Crowd Turnout Prediction**\n"
+            "* 📍 **Venue Recommendations** for any city\n"
+            "* 📅 **Event Schedules** & itineraries\n\n"
+            "What kind of event are we planning today?"
         )
-    elif "wedding" in msg:
+        
+    elif any(k in msg for k in ["bts", "concert", "music", "band", "singer", "performance", "show"]):
         return (
-            "Weddings are magical but demand detailed coordination. Here are 3 essential steps:\n"
-            "1. **Confirm Guest Count & Budget**: Establishes venue limits.\n"
-            "2. **Theme & Styling**: Decides flowers, colors, and attire.\n"
-            "3. **Vendor Contracts**: Catering, photographers, and audio must be booked at least 6 months ahead."
+            "🎵 **Planning a Concert or Live Music Event**:\n\n"
+            "Organizing a large-scale performance or concert (like a BTS concert!) requires robust coordination. Here is a starter checklist:\n\n"
+            "1. **Crowd & Safety First**:\n"
+            "   * Plan barricades, zone divisions (VIP, general admission), and emergency exits.\n"
+            "   * Coordinate with local city security and medical teams.\n"
+            "2. **Acoustics & Stage Production**:\n"
+            "   * Sound checks, professional line-array speakers, stage lighting, and large LED display screens are critical.\n"
+            "3. **Ticketing & QR Passes**:\n"
+            "   * Use digital passes with QR codes for fast scanning at the gates (which our platform supports!).\n"
+            "4. **F&B and Merchandise**:\n"
+            "   * Separate merchandise stalls and beverage counters to optimize queue times.\n\n"
+            "Do you want me to estimate a budget or generate a timeline for this concert?"
         )
-    elif "budget" in msg or "cost" in msg:
+        
+    elif any(k in msg for k in ["wedding", "marriage", "reception"]):
         return (
-            "Planning budgets requires factoring in multiple segments. Typically:\n"
-            "* **Venue & Catering**: 40% - 50% of the total budget.\n"
-            "* **Entertainment & AV**: 15% - 20%.\n"
-            "* **Decorations & Layout**: 10% - 15%.\n"
-            "* **Emergency contingency**: 5% - 10%.\n\n"
-            "Would you like me to run a customized budget estimation for your event details?"
+            "💍 **Planning a Wedding**:\n\n"
+            "Weddings are highly personal and require meticulous styling and coordination. Key milestones to focus on:\n\n"
+            "* **Phase 1: Guest List & Venue** (6-12 months ahead)\n"
+            "  * Finalize the headcount; this directly dictates your venue selection (banquet hall, outdoor garden, beach).\n"
+            "* **Phase 2: Themes & Decor** (3-6 months ahead)\n"
+            "  * Lock in color palettes, floral centerpieces, backdrop stage, and lighting layout.\n"
+            "* **Phase 3: Vendor Booking & Catering**\n"
+            "  * Confirm photographers, makeup artists, DJs/live music, and catering menus early.\n\n"
+            "Would you like venue recommendations or a sample timeline for a wedding?"
         )
-    elif "venue" in msg or "place" in msg:
+        
+    elif any(k in msg for k in ["fest", "college", "university", "competition", "cult", "cultural"]):
         return (
-            "Finding a venue is highly dependent on your **budget**, **guest headcount**, and **city location**.\n"
-            "I recommend checking out our dedicated **AI Planner** section in the sidebar to generate direct suggestions!"
+            "🎓 **Planning a College Fest / Cultural Event**:\n\n"
+            "College fests are high-energy events that rely heavily on student coordination and sponsorships. Essential tips:\n\n"
+            "* **Engagement Activities**: Arrange a mix of technical tournaments, gaming zones, and a main cultural stage (fashion show, band wars).\n"
+            "* **Sponsorship Packages**: Define tiered sponsorship slots (Gold, Silver, Platinum) offering logo placements on banners and social media promotions.\n"
+            "* **Volunteer Management**: Divide tasks into committees (Security, Stage, Hospitality, Registrations).\n\n"
+            "Would you like me to generate a schedule or crowd prediction for your next fest?"
         )
+        
+    elif any(k in msg for k in ["seminar", "conference", "corporate", "business", "workshop", "webinar"]):
+        return (
+            "💼 **Planning a Corporate Seminar or Conference**:\n\n"
+            "Corporate events demand polished execution, punctuality, and clear value for attendees. Checklist:\n\n"
+            "* **Audio/Visual Setup**: Ensure reliable slide presentation displays, clip-on microphones, and high-speed Wi-Fi access.\n"
+            "* **Itinerary**: Schedule regular breaks (every 90-120 minutes) for coffee, networking, and restroom visits.\n"
+            "* **Registration**: Use smooth QR-code check-ins at reception desk to avoid entry delays.\n\n"
+            "Would you like an estimated budget or a structured timeline schedule for this corporate seminar?"
+        )
+        
+    elif any(k in msg for k in ["birthday", "party", "anniversary", "celebration", "social"]):
+        return (
+            "🎉 **Planning a Social Party or Celebration**:\n\n"
+            "Let's make this celebration memorable! Here are a few creative planning ideas:\n\n"
+            "* **Custom Theme**: Select a theme (Retro, Neon Glow, Masquerade, Garden Party) to tie decorations and activities together.\n"
+            "* **Interactive Food Stalls**: Instead of standard buffet catering, use live counters (e.g. customized pasta bar, slider stations).\n"
+            "* **Entertainment & Photo-Booth**: Set up a custom photobooth backdrop with props to encourage guests to share photos online.\n\n"
+            "Tell me the location and expected guest count, and I can suggest venues!"
+        )
+        
+    elif any(k in msg for k in ["budget", "cost", "price", "money", "expensive"]):
+        return (
+            "💰 **Event Budget Management Tips**:\n\n"
+            "To keep costs under control without compromising on quality:\n\n"
+            "* **Split Allocations**: 40-50% for Venue/Food, 15-20% for AV & Tech, 15% for Styling/Decor, 10% for Marketing, and 10% for Emergency Reserves.\n"
+            "* **Vendor Negotiation**: Request itemized quotes and book off-peak dates if flexible.\n"
+            "* **Sponsors**: Partner with local food/media brands to reduce direct costs in exchange for marketing visibility.\n\n"
+            "You can use our **AI Planner** tools in the sidebar to get detailed budget estimations!"
+        )
+        
+    elif any(k in msg for k in ["venue", "place", "location", "hall", "ground"]):
+        return (
+            "📍 **Selecting the Right Venue**:\n\n"
+            "The perfect venue checks all these boxes:\n\n"
+            "1. **Accessibility**: Easy parking and public transport options for attendees.\n"
+            "2. **Capacity**: Never book a venue that fits fewer than your expected crowd size. (Ensure at least a 10% buffer).\n"
+            "3. **Amenities**: Confirm if AV gear, tables, chairs, and restrooms are included in the pricing.\n\n"
+            "Use our **AI Planner** in the sidebar to generate curated venue recommendations!"
+        )
+        
+    elif any(k in msg for k in ["ticket", "book", "pass", "seat"]):
+        return (
+            "🎫 **Ticketing & Booking Management**:\n\n"
+            "Our platform has built-in ticket reservation. Here is how it helps:\n\n"
+            "* **Real-time availability**: Tracks remaining ticket allocations against crowd capacity automatically.\n"
+            "* **QR code ticketing**: Registered users receive a customized booking containing a scannable QR ticket.\n"
+            "* **Analytics**: Real-time sales data displays directly on the Admin/Organizer dashboard.\n\n"
+            "Go to the **Event Hub** to browse events and book tickets!"
+        )
+        
+    elif any(k in msg for k in ["help", "feature", "what can you do"]):
+        return (
+            "💡 **What I Can Do For You**:\n\n"
+            "As your **EventAI Planner Assistant**, I can assist with:\n\n"
+            "1. 🎤 **Concerts, Festivals & Seminars**: Step-by-step setup guides.\n"
+            "2. 🗺️ **Venue Selection**: Key elements to check for any city.\n"
+            "3. 💵 **Budget Planning**: Standard allocation rules and optimization tips.\n"
+            "4. 📅 **Itinerary Design**: Sample timetables to streamline execution.\n\n"
+            "Feel free to ask questions like: *'How do I plan a wedding?'* or *'What is a standard concert budget split?'*"
+        )
+        
     else:
-        return (
-            "That sounds like an interesting event requirement! When planning, always keep target audience profiles and scheduling flow in mind.\n\n"
-            "Could you share more details like the event type, budget, or target crowd size so I can provide customized tips?"
-        )
+        # Dynamic fallback responses to make it feel natural and not repetitive
+        responses = [
+            (
+                "That sounds like an exciting event plan! 🚀\n\n"
+                "To give you the most accurate advice, could you share:\n"
+                "* **Event Type** (e.g. Wedding, Concert, Conference, Birthday Party)\n"
+                "* **Location/City**\n"
+                "* **Estimated Guest Count**\n\n"
+                "I can then draft a custom checklist or budget breakdown for you!"
+            ),
+            (
+                "Interesting concept! I can help you organize and structure this event.\n\n"
+                "Would you like to:\n"
+                "* 📅 Generate a step-by-step timeline schedule?\n"
+                "* 💰 Estimate itemized costs?\n"
+                "* 📍 Get ideas for theme decorations?\n\n"
+                "Tell me a bit more about what you're imagining!"
+            ),
+            (
+                "I'd love to help you plan that event! 🌟\n\n"
+                "To help us get started, what is your primary focus right now? Are we selecting a venue, setting a ticket price, or organizing the speaker/itinerary flow?"
+            )
+        ]
+        # Choose a response based on the hash of the message to be stable yet varied across different inputs
+        idx = sum(ord(c) for c in msg) % len(responses)
+        return responses[idx]

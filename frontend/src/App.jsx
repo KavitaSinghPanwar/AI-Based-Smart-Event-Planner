@@ -7,6 +7,7 @@ import Sidebar from './components/Sidebar';
 // Pages
 import Login from './pages/Login';
 import Register from './pages/Register';
+import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
 import EventHub from './pages/EventHub';
 import EventDetails from './pages/EventDetails';
@@ -14,6 +15,7 @@ import CreateEvent from './pages/CreateEvent';
 import BookingsList from './pages/BookingsList';
 import AIPlanner from './pages/AIPlanner';
 import ChatbotAssistant from './pages/ChatbotAssistant';
+import Profile from './pages/Profile';
 
 // Route guards
 const ProtectedRoute = () => {
@@ -36,7 +38,7 @@ const ProtectedRoute = () => {
 
 const PublicRoute = () => {
   const { token } = useAuth();
-  return token ? <Navigate to="/" replace /> : <Outlet />;
+  return token ? <Navigate to="/dashboard" replace /> : <Outlet />;
 };
 
 // Main Layout Wrapper
@@ -61,7 +63,7 @@ const OrganizerRoute = () => {
   if (user && (user.role === 'organizer' || user.role === 'admin')) {
     return <Outlet />;
   }
-  return <Navigate to="/" replace />;
+  return <Navigate to="/dashboard" replace />;
 };
 
 function App() {
@@ -70,6 +72,9 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
+            {/* Public landing page */}
+            <Route path="/" element={<LandingPage />} />
+
             {/* Public auth pages */}
             <Route element={<PublicRoute />}>
               <Route path="/login" element={<Login />} />
@@ -79,7 +84,8 @@ function App() {
             {/* Private dashboard pages */}
             <Route element={<ProtectedRoute />}>
               <Route element={<DashboardLayout />}>
-                <Route path="/" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/events" element={<EventHub />} />
                 <Route path="/events/:id" element={<EventDetails />} />
                 <Route path="/bookings" element={<BookingsList />} />

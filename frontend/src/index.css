@@ -1750,3 +1750,27 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Premium Hover Lift & Glow Animations */
+.card-hover-lift {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease !important;
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 30px rgba(var(--accent-rgb), 0.12) !important;
+  border-color: rgba(var(--accent-rgb), 0.45) !important;
+}
+
+.btn-primary, .btn-details {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.35) !important;
+}
+
+.btn-details:hover {
+  box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.2) !important;
+}
+
+

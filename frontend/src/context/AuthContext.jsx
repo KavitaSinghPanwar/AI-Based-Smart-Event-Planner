@@ -150,6 +150,35 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateProfile = async (profileData) => {
+    try {
+      const response = await api.put('auth/profile/', profileData);
+      setUser(response.data);
+      return { success: true };
+    } catch (error) {
+      console.error("Profile update failed", error);
+      const errors = error.response?.data;
+      let errorMsg = "Profile update failed. Please check inputs.";
+      if (errors) {
+        if (errors.detail) {
+          const detail = errors.detail;
+          if (typeof detail === 'string') {
+            errorMsg = detail;
+          } else if (typeof detail === 'object') {
+            errorMsg = Object.entries(detail)
+              .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(' ') : val}`)
+              .join('\n');
+          }
+        } else if (typeof errors === 'object') {
+          errorMsg = Object.entries(errors)
+            .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(' ') : val}`)
+            .join('\n');
+        }
+      }
+      return { success: false, error: errorMsg };
+    }
+  };
+
   const value = {
     user,
     token,
@@ -157,6 +186,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { api, useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
-import { Ticket, Eye, X } from 'lucide-react';
+import { Ticket, Eye, X, Download } from 'lucide-react';
 
 const BookingsList = () => {
   const { user } = useAuth();
@@ -28,6 +30,27 @@ const BookingsList = () => {
   const openTicket = (booking) => {
     setActiveBooking(booking);
     setShowModal(true);
+  };
+
+  const downloadPDF = (booking) => {
+    const element = document.getElementById('ticket-download-area');
+    if (!element) return;
+    
+    html2canvas(element, { 
+      scale: 2, 
+      useCORS: true,
+      backgroundColor: '#111827' // dark background matches dark theme aesthetic
+    }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 110; 
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 50, 30, imgWidth, imgHeight);
+      pdf.save(`Ticket_BK-${booking.id}.pdf`);
+    }).catch(err => {
+      console.error("Error generating PDF", err);
+    });
   };
 
   return (
@@ -120,14 +143,14 @@ const BookingsList = () => {
             </div>
 
             <div className="ticket-wrapper">
-              <div className="ticket-pass animate-scale-in">
-                <div className="ticket-header">
-                  <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>Admission Ticket</h3>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>EventAI Smart Pass</div>
+              <div id="ticket-download-area" className="ticket-pass animate-scale-in" style={{ padding: '24px', borderRadius: '16px', background: '#111827', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <div className="ticket-header" style={{ marginBottom: '16px', borderBottom: '1px dashed rgba(255, 255, 255, 0.1)', paddingBottom: '12px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#ffffff' }}>Admission Ticket</h3>
+                  <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>EventAI Smart Pass</div>
                 </div>
                 
-                <div className="ticket-body">
-                  <div className="qr-code-display" style={{ marginBottom: '20px', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '12px', background: 'white' }}>
+                <div className="ticket-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div className="qr-code-display" style={{ marginBottom: '20px', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px', padding: '12px', background: 'white' }}>
                     {activeBooking.qr_code_image ? (
                       <img src={`http://localhost:8000${activeBooking.qr_code_image}`} alt="Ticket QR Code" style={{ display: 'block', width: '160px', height: '160px' }} />
                     ) : (
@@ -137,39 +160,48 @@ const BookingsList = () => {
                     )}
                   </div>
                   
-                  <h4 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '6px', textAlign: 'center', color: 'var(--text-primary)' }}>
+                  <h4 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '6px', textAlign: 'center', color: '#ffffff' }}>
                     {activeBooking.event_details?.title}
                   </h4>
-                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px', textAlign: 'center', lineHeight: '1.4' }}>
+                  <p style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '16px', textAlign: 'center', lineHeight: '1.4' }}>
                     {activeBooking.event_details?.venue}, {activeBooking.event_details?.city}<br />
                     {new Date(activeBooking.event_details?.date).toLocaleDateString()} at {activeBooking.event_details?.time.substring(0, 5)}
                   </p>
-
-                  <div style={{ width: '100%', borderTop: '1px dashed var(--border-color)', paddingTop: '16px', fontSize: '13.5px', textAlign: 'left' }}>
+ 
+                  <div style={{ width: '100%', borderTop: '1px dashed rgba(255, 255, 255, 0.1)', paddingTop: '16px', fontSize: '13px', textAlign: 'left', color: '#d1d5db' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Reference ID:</span>
-                      <strong style={{ color: 'var(--text-primary)' }}>#BK-{activeBooking.id}</strong>
+                      <span style={{ color: '#9ca3af' }}>Reference ID:</span>
+                      <strong style={{ color: '#ffffff' }}>#BK-{activeBooking.id}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Ticket Holder:</span>
-                      <strong style={{ color: 'var(--text-primary)' }}>{activeBooking.user_details?.username}</strong>
+                      <span style={{ color: '#9ca3af' }}>Ticket Holder:</span>
+                      <strong style={{ color: '#ffffff' }}>{activeBooking.user_details?.username}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Quantity:</span>
-                      <strong style={{ color: 'var(--text-primary)' }}>{activeBooking.ticket_quantity} pass(es)</strong>
+                      <span style={{ color: '#9ca3af' }}>Quantity:</span>
+                      <strong style={{ color: '#ffffff' }}>{activeBooking.ticket_quantity} pass(es)</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Seats:</span>
+                      <span style={{ color: '#9ca3af' }}>Seats:</span>
                       <strong style={{ color: 'var(--accent-primary)' }}>{activeBooking.seat_numbers}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-muted)' }}>Amount Paid:</span>
-                      <strong style={{ color: 'var(--success)' }}>${parseFloat(activeBooking.total_price).toFixed(2)}</strong>
+                      <span style={{ color: '#9ca3af' }}>Amount Paid:</span>
+                      <strong style={{ color: '#10b981' }}>${parseFloat(activeBooking.total_price).toFixed(2)}</strong>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            <button 
+              className="btn-primary" 
+              style={{ width: '100%', padding: '12px', marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 600 }}
+              onClick={() => downloadPDF(activeBooking)}
+            >
+              <Download size={16} />
+              <span>Download PDF Ticket</span>
+            </button>
 
             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '16px', textAlign: 'center' }}>
               Scan QR code at the entrance for automated check-in and seat verification.

@@ -374,12 +374,40 @@ export const BudgetEstimation = () => {
       {results && (
         <div className="ai-results-card glass-panel" style={{ marginTop: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700 }}>Estimated Itemized Budget</h3>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--success)' }}>
-              ${results.total_estimated_cost.toLocaleString()} <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-secondary)' }}>USD</span>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Estimated Itemized Budget</h3>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--success)' }}>
+              ${results.total_estimated_cost.toLocaleString()} <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>USD</span>
             </div>
           </div>
           
+          {/* Summary Metric Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+            <div className="glass-panel animate-scale-in" style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(var(--card-rgb), 0.3)', border: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Venue Cost</div>
+              <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
+                ${(results.items.find(i => i.category.toLowerCase().includes('venue'))?.cost || results.total_estimated_cost * 0.35).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </div>
+            </div>
+            <div className="glass-panel animate-scale-in" style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(var(--card-rgb), 0.3)', border: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Food Cost</div>
+              <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
+                ${(results.items.find(i => i.category.toLowerCase().includes('cater') || i.category.toLowerCase().includes('food'))?.cost || results.total_estimated_cost * 0.30).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </div>
+            </div>
+            <div className="glass-panel animate-scale-in" style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(var(--card-rgb), 0.3)', border: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Decoration & AV</div>
+              <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
+                ${(results.items.find(i => i.category.toLowerCase().includes('logistics') || i.category.toLowerCase().includes('decor') || i.category.toLowerCase().includes('av'))?.cost || results.total_estimated_cost * 0.20).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </div>
+            </div>
+            <div className="glass-panel animate-scale-in" style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(var(--accent-rgb), 0.1)', border: '1px solid rgba(var(--accent-rgb), 0.2)' }}>
+              <div style={{ fontSize: '11px', color: 'var(--accent-primary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Estimate</div>
+              <div style={{ fontSize: '16px', fontWeight: 800, color: '#10b981', marginTop: '4px' }}>
+                ${results.total_estimated_cost.toLocaleString()}
+              </div>
+            </div>
+          </div>
+
           <h4 style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '16px', fontWeight: 600, letterSpacing: '0.5px' }}>Cost Breakdown</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginBottom: '28px' }}>
             {results.items.map((item, idx) => {
@@ -529,10 +557,20 @@ export const ScheduleGenerator = () => {
                 <div style={{ position: 'absolute', left: '-39.5px', top: '2px', width: '11px', height: '11px', borderRadius: '50%', background: 'var(--accent-primary)', border: '4px solid var(--bg-secondary)', boxSizing: 'content-box', boxShadow: '0 0 0 3px rgba(var(--accent-rgb), 0.2)' }}></div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11.5px', fontWeight: 700, color: 'var(--accent-primary)', background: 'rgba(var(--accent-rgb), 0.12)', padding: '3px 10px', borderRadius: '8px' }}>
                       <Clock size={12} /> {item.time}
                     </span>
+                    {(() => {
+                      const act = item.activity.toLowerCase();
+                      if (act.includes('registration') || act.includes('check-in') || act.includes('doors open') || act.includes('welcome')) {
+                        return <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', backgroundColor: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.15)' }}>Registration</span>;
+                      }
+                      if (act.includes('break') || act.includes('lunch') || act.includes('refreshment') || act.includes('coffee') || act.includes('intermission')) {
+                        return <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', backgroundColor: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.15)' }}>Break</span>;
+                      }
+                      return <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', backgroundColor: 'rgba(168, 85, 247, 0.12)', color: '#a855f7', border: '1px solid rgba(168, 85, 247, 0.15)' }}>Session</span>;
+                    })()}
                   </div>
                   <div style={{ fontSize: '14.5px', fontWeight: 600, color: 'var(--text-primary)' }}>{item.activity}</div>
                 </div>
